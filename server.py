@@ -1,19 +1,18 @@
 """This module implements getting telegram bot updates 
 via webhook. To set webhooks for this server, use
-
     curl -F "url=https://<YOUR_PUBLIC_IPV4_ADDRESS>/" -F "certificate=@cert.pem" https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook
-
 telegram API call.
-
 To create self-signed SSL certificate, use
-
    openssl req -newkey rsa:2048 -sha256 -nodes -keyout private.key -x509 -days 3650 -out cert.pem
-
 (taken from https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks).
 """
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import ssl
+import json
+import requests
+import test_bot as bot
+import logging
 
 
 class TelegramWebhookHandler(BaseHTTPRequestHandler):
@@ -23,7 +22,14 @@ class TelegramWebhookHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
-        print(post_data)
+
+        self.send_response(200, "OK")
+        self.end_headers()
+
+        bot.respond(json.loads(post_data.decode('utf-8')))
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 # 'localhost' adress allows only clients from the same host,
