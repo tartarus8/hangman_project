@@ -11,11 +11,12 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import ssl
 import json
 import requests
-import test_bot as bot
+import bot_code as bot
 import logging
 
 
 class TelegramWebhookHandler(BaseHTTPRequestHandler):
+    states = {}
     def do_GET(self):
         pass
 
@@ -26,7 +27,7 @@ class TelegramWebhookHandler(BaseHTTPRequestHandler):
         self.send_response(200, "OK")
         self.end_headers()
 
-        bot.respond(json.loads(post_data.decode('utf-8')))
+        self.states = bot.respond(json.loads(post_data.decode('utf-8')), self.states)
 
 
 logging.basicConfig(level=logging.DEBUG)
