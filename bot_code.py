@@ -7,30 +7,43 @@ alphabet = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', '�
 token = '5189961595:AAFS1oWXVmsUYuYCa0m5haGBti6PF2BnvvY'
 
 
+
 def send_message(sender_id, text, token):
         json_request = requests.post(f'https://api.telegram.org/bot{token}/sendMessage?chat_id={sender_id}/&text={text}').json()
 
+
 def get_word():
     words = []
+
     with open('words', 'r') as words_file:
         word = words_file.readline()
         while word != '':
             words.append(word)
             word = words_file.readline()
+    
     word = random.choice(words)[:-1]
     letters = []
     for letter in word:
         letters.append('_')
+
     return word, letters
 
 
 def interpretate_message(states, text, sender_id, token, alphabet):
-    if text == 'начать' and states[sender_id]['state'] == 'out':
+
+    if '!add' in text:
+        with open('words', 'a') as words_file:
+            word = text.split('!add ')
+            words_file.write(word[1] + '\n')
+        send_message(sender_id, 'Принято', token)
+
+    elif text == 'начать' and states[sender_id]['state'] == 'out':
         word, letters = get_word()
         send_message(sender_id, ' '.join(letters), token)
         states[sender_id] = {'state':'in', 'word':word, 'letters':letters, 'attempts':10, 'used':[]}
     elif states[sender_id]['state'] != 'in':
         send_message(sender_id, 'Не понимаю', token)
+    
     else:
         if text not in alphabet or text in states[sender_id]['used']:
             send_message(sender_id, 'Давай лучше новую букву', token)
@@ -51,20 +64,22 @@ def interpretate_message(states, text, sender_id, token, alphabet):
                 if states[sender_id]['attempts'] == 0:
                     send_message(sender_id, 'Конец игры! Словом было: ' + states[sender_id]['word'], token)
                     states[sender_id] = {'state':'out'}
+    
     return states
 
 
 def respond(post_data, states):
-
     message = post_data['message']
     sender_id = str(message['from']['id'])
 
     if sender_id not in states:
         send_message(sender_id, 'Привет, я Вешалка, бот для игры в виселицу. Буквы "Е", "Ë" и "И", "Й" считаю отдельно. Чтобы начать напиши "начать"', token)
         states[sender_id] = {'state':'out'}
+    
     elif 'text' in message:
-        text = message['text']
+        text = message['text'].lower()
         states = interpretate_message(states, text, sender_id, token, alphabet)
+    
     else:
         send_message(sender_id, 'Не понимаю', token)
     return states

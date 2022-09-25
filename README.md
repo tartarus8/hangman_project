@@ -1,2 +1,2 @@
 # Field-o-miracles
-Бот загадывает слово пользователю, пользователь отгадывает, десять шансов, вот и всё
+This is completed project of word game, made with help of requests library and webhooks.

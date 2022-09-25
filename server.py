@@ -5,6 +5,7 @@ telegram API call.
 To create self-signed SSL certificate, use
    openssl req -newkey rsa:2048 -sha256 -nodes -keyout private.key -x509 -days 3650 -out cert.pem
 (taken from https://github.com/python-telegram-bot/python-telegram-bot/wiki/Webhooks).
+    In case of bugs use "logging.basicConfig(level=logging.DEBUG)"
 """
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -27,10 +28,10 @@ class TelegramWebhookHandler(BaseHTTPRequestHandler):
         self.send_response(200, "OK")
         self.end_headers()
 
-        self.states = bot.respond(json.loads(post_data.decode('utf-8')), self.states)
-
-
-logging.basicConfig(level=logging.DEBUG)
+        try:
+            self.states = bot.respond(json.loads(post_data.decode('utf-8')), self.states)
+        except json.decoder.JSONDecodeError:
+            print(post_data.decode('utf-8'))
 
 
 # 'localhost' adress allows only clients from the same host,
