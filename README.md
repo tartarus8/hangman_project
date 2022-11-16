@@ -1,2 +1,2 @@
-# Field-o-miracles
-This is completed project of word game, made with help of requests library and webhooks.
+# Hangman_bot
+This is project of word game with telegram chatbot, made with help of python, telegram api, requests library and webhooks. Currently in development
