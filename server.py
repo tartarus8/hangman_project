@@ -12,8 +12,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import ssl
 import json
 import requests
-import bot_code as bot
-import logging
+import tg_bot as bot
 
 
 class TelegramWebhookHandler(BaseHTTPRequestHandler):
