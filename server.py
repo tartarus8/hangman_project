@@ -13,29 +13,42 @@ import ssl
 import json
 import requests
 import tg_bot as bot
+import logging
+
+
+
+logger = logging.getLogger(__name__)
+
 
 
 class TelegramWebhookHandler(BaseHTTPRequestHandler):
-    states = {}
-    def do_GET(self):
-        pass
-
     def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length)
-
-        self.send_response(200, "OK")
-        self.end_headers()
-
+        logger.info("New POST request")
         try:
-            self.states = bot.respond(json.loads(post_data.decode('utf-8')), self.states)
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            decoded_data = json.loads(post_data.decode('utf-8'))
+            self.server.state = bot.respond(json.loads(post_data.decode('utf-8')), self.server.state)
         except json.decoder.JSONDecodeError:
-            print(post_data.decode('utf-8'))
+            logger.exception("Failed to decode data")
+        except:
+            logger.exception("some other error")
+        else:
+            logger.info("Request handled successfully")
+        finally:
+            self.send_response(200, "OK")
+            self.end_headers()
+
+
+class StatedHTTPServer(HTTPServer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.state = dict()
 
 
 # 'localhost' adress allows only clients from the same host,
 # while '0.0.0.0' exposes the sever to web
-server = HTTPServer(('0.0.0.0', 443), TelegramWebhookHandler)
+server = StatedHTTPServer(('0.0.0.0', 443), TelegramWebhookHandler)
 # enable SSL (HTTPS) support using code from
 # https://blog.anvileight.com/posts/simple-python-http-server/#example-with-ssl-support
 server.socket = ssl.wrap_socket(
@@ -44,4 +57,5 @@ server.socket = ssl.wrap_socket(
     certfile='cert.pem',
     server_side=True
 )
+logging.basicConfig(level=logging.INFO)
 server.serve_forever()
