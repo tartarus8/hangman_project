@@ -41,7 +41,7 @@ def interpretate_message(states, text, sender_id, token, alphabet):
         word, letters = get_word()
         send_message(sender_id, ' '.join(letters), token)
         states[sender_id] = {'state':'in', 'word':word, 'letters':letters, 'attempts':10, 'used':[]}
-    else:
+    elif states[sender_id]['state'] == 'in':
         if text in alphabet and text not in states[sender_id]['used']:
             states[sender_id]['used'].append(text)
             if text in states[sender_id]['word']:
