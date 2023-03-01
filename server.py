@@ -44,7 +44,13 @@ class StatedHTTPServer(HTTPServer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.state = dict()
+    def save_state(self):
+        with open("state.json", "w") as fout:
+            json.dump(self.state, fout)
 
+    def load_state(self):
+        with open("state.json", "r") as fin:
+            self.state = json.load(fin)
 
 # 'localhost' adress allows only clients from the same host,
 # while '0.0.0.0' exposes the sever to web
@@ -58,4 +64,10 @@ server.socket = ssl.wrap_socket(
     server_side=True
 )
 logging.basicConfig(level=logging.INFO)
-server.serve_forever()
+server.load_state()
+try:
+    server.serve_forever()
+except KeyboardInterrupt:
+    pass
+finally:
+    server.save_state()
