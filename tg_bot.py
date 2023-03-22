@@ -68,10 +68,12 @@ def interpretate_message(state, text, chat_id, sender_id, token, alphabet):
 
         if 'hard' in text:
             attempts = 5
+            game = 'in_hm'
         else:
             attempts = 10
+            game = 'in_nm'
 
-        state[chat_id] = {'game':'in_nm', 'word':word, 'letters':letters, 'attempts':attempts, 'used':[], 'points':points}
+        state[chat_id] = {'game':game, 'word':word, 'letters':letters, 'attempts':attempts, 'used':[], 'points':points}
     
     elif text == '/rating' or text == '/rating@veshalka259_bot':
         send_message(chat_id, 'Ваш рейтинг: ' + str(state[sender_id]['rating']), token)
@@ -102,14 +104,15 @@ def interpretate_message(state, text, chat_id, sender_id, token, alphabet):
 
     elif state[chat_id]['game'] == 'in_nm' or state[chat_id]['game'] == 'in_hm':
         
-        print('ingame message: ' + text)
+        if text == 'ë':#these letters have different encodings
+            text = 'ё'
+        
         if text not in alphabet:
             return state
         elif text in state[chat_id]['used']:
             send_message(chat_id, 'Эта уже была', token)
             return state
         
-        print('letter check')
         state[chat_id]['used'].append(text)
         if text not in state[chat_id]['word']:
             state[chat_id]['attempts'] -= 1
@@ -120,7 +123,6 @@ def interpretate_message(state, text, chat_id, sender_id, token, alphabet):
                 state[chat_id] = {'game':'out'}
             return state
 
-        print('word check')
         for i in range(len(state[chat_id]['word'])):
             if state[chat_id]['word'][i] == text:
                     state[chat_id]['letters'][i] = text
